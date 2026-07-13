@@ -80,8 +80,12 @@ FORM_HTML = """
     <h1>Evaluatie wijkteams 2025–2026</h1>
     <p>Seizoensevaluatie</p>
   </header>
-  <p class="intro">We horen graag hoe je het afgelopen seizoen hebt ervaren. Je antwoorden helpen ons om de
-  wijkteams in het seizoen 2026–2027 verder te ontwikkelen. We stellen een eerlijke en concrete reactie op prijs.</p>
+  <div class="intro">
+    <p>Welkom, en hartelijk dank voor al je werk het afgelopen seizoen.</p>
+    <p>Als kerkenraad hebben we dankbaar Gods zegen gezien op het werk van de wijkteams.
+    Daar willen we graag verder in groeien. Help ons daarbij door dit formulier in te vullen.</p>
+    <p>Anoniem reageren mag — met je naam erbij is het voor ons wat handiger.</p>
+  </div>
 
   <form method="post" action="{{ url_for('verstuur') }}">
     {% for key, vraag in velden %}
