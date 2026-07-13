@@ -6,8 +6,22 @@ from flask import Flask, request, render_template_string, redirect, url_for, Res
 
 app = Flask(__name__)
 
-# Waar de CSV wordt opgeslagen. Op Railway koppel je een Volume op /data.
-DATA_DIR = os.environ.get("DATA_DIR", os.path.join(os.path.dirname(__file__), "data"))
+# Waar de CSV wordt opgeslagen.
+#  - Op Railway: koppel een Volume met mount path /data. Die map overleeft
+#    elke redeploy en nieuwe build. De app pakt 'm dan automatisch.
+#  - Lokaal (of zonder Volume): valt terug op een map ./data naast dit bestand.
+# Je kunt dit desgewenst overrulen met de omgevingsvariabele DATA_DIR.
+def _kies_data_dir():
+    override = os.environ.get("DATA_DIR")
+    if override:
+        return override
+    # Railway-Volume aanwezig en schrijfbaar? Gebruik die -> data blijft bewaard.
+    if os.path.isdir("/data") and os.access("/data", os.W_OK):
+        return "/data"
+    return os.path.join(os.path.dirname(__file__), "data")
+
+
+DATA_DIR = _kies_data_dir()
 os.makedirs(DATA_DIR, exist_ok=True)
 CSV_PATH = os.path.join(DATA_DIR, "antwoorden.csv")
 
@@ -44,7 +58,9 @@ FORM_HTML = """
   label { display:block; font-weight:600; margin-bottom:8px; }
   .hint { font-weight:400; color:var(--muted); font-size:.92rem; }
   input[type=text], textarea { width:100%; padding:12px 13px; border:1px solid var(--line);
-    border-radius:10px; font:inherit; background:#fff; color:inherit; }
+    border-radius:10px; font:inherit; background:#fff; color:var(--text);
+    -webkit-text-fill-color:var(--text); opacity:1; }
+  input::placeholder, textarea::placeholder { color:var(--muted); -webkit-text-fill-color:var(--muted); opacity:1; }
   textarea { min-height:120px; resize:vertical; }
   input:focus, textarea:focus { outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
   button { width:100%; padding:15px; font-size:1.05rem; font-weight:700; color:#fff;

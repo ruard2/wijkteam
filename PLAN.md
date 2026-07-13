@@ -37,13 +37,16 @@ Naam en wijkteam zijn **optioneel** (lage drempel om eerlijk te zijn).
 ### 3. Stel een geheime token in
 - Open het project → tabblad **Variables** → **New Variable**:
   - `ADMIN_TOKEN` = een geheim woord naar keuze (bv. `kerkenraad-x7q2`)
-  - `DATA_DIR` = `/data`
-- (Dit token gebruik je straks om de antwoorden te downloaden.)
+- (Dit token gebruik je straks om de antwoorden te downloaden. Meer variabelen
+  zijn niet nodig.)
 
-### 4. Voeg een Volume toe (zodat antwoorden blijven staan)
-> Belangrijk: zonder Volume verdwijnt de CSV bij elke redeploy.
+### 4. Voeg een Volume toe (zodat antwoorden een redeploy overleven)
+> Belangrijk: zonder Volume verdwijnt de CSV bij elke redeploy of nieuwe build.
 - In het project → **New** → **Volume** → koppel deze aan je service.
-- Zet als **Mount path**: `/data` (gelijk aan `DATA_DIR` hierboven).
+- Zet als **Mount path**: `/data`.
+- Meer hoef je niet te doen: de app ziet `/data` automatisch en bewaart de
+  antwoorden daar. (Geen Volume gekoppeld? Dan werkt de app nog steeds, maar
+  gaan antwoorden bij een redeploy verloren.)
 
 ### 5. Zet de app publiek
 - Tabblad **Settings** → **Networking** → **Generate Domain**.
