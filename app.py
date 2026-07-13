@@ -57,10 +57,12 @@ FORM_HTML = """
     padding:16px; margin-bottom:16px; }
   label { display:block; font-weight:600; margin-bottom:8px; }
   .hint { font-weight:400; color:var(--muted); font-size:.92rem; }
+  /* Invoervelden altijd wit met bijna-zwarte tekst -- ook in donkere modus,
+     anders wordt de getypte tekst lichtgrijs op wit (onleesbaar). */
   input[type=text], textarea { width:100%; padding:12px 13px; border:1px solid var(--line);
-    border-radius:10px; font:inherit; background:#fff; color:var(--text);
-    -webkit-text-fill-color:var(--text); opacity:1; }
-  input::placeholder, textarea::placeholder { color:var(--muted); -webkit-text-fill-color:var(--muted); opacity:1; }
+    border-radius:10px; font:inherit; background:#fff; color:#16201b;
+    -webkit-text-fill-color:#16201b; caret-color:#16201b; opacity:1; }
+  input::placeholder, textarea::placeholder { color:#8a938c; -webkit-text-fill-color:#8a938c; opacity:1; }
   textarea { min-height:120px; resize:vertical; }
   input:focus, textarea:focus { outline:2px solid var(--accent); outline-offset:1px; border-color:var(--accent); }
   button { width:100%; padding:15px; font-size:1.05rem; font-weight:700; color:#fff;
