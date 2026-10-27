@@ -10,6 +10,7 @@ Naam en wijkteam zijn **optioneel** (lage drempel om eerlijk te zijn).
 ## Wat je krijgt
 
 - `/`         → het formulier (mobielvriendelijk, licht + donker)
+- `/antwoorden` → reacties direct lezen in de browser (beveiligd met een token)
 - `/download` → CSV downloaden (beveiligd met een token)
 - `/health`   → statuscheck voor Railway
 
@@ -59,6 +60,17 @@ Naam en wijkteam zijn **optioneel** (lage drempel om eerlijk te zijn).
 ---
 
 ## Antwoorden ophalen
+
+Lees de antwoorden direct in je browser via:
+
+```
+https://JOUW-LINK.up.railway.app/antwoorden?token=JOUW_ADMIN_TOKEN
+```
+
+Op deze beheerpagina staan de nieuwste reacties bovenaan. Je kunt daar ook op
+**Download CSV** klikken.
+
+Of download het CSV-bestand rechtstreeks via:
 
 Open in je browser:
 

@@ -134,6 +134,92 @@ BEDANKT_HTML = """
 </html>
 """
 
+ANTWOORDEN_HTML = """
+<!doctype html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow, noarchive">
+<title>Inzendingen wijkteams</title>
+<style>
+  :root { --accent:#2f6b4f; --bg:#f6f7f5; --card:#fff; --line:#e2e5e0;
+    --text:#1e2420; --muted:#5c6660; --soft:#edf4ef; }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--text);
+    font:16px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+  .wrap { max-width:920px; margin:0 auto; padding:24px 16px 64px; }
+  header { display:flex; align-items:flex-start; justify-content:space-between; gap:20px;
+    margin-bottom:24px; }
+  h1 { margin:0 0 4px; font-size:clamp(1.55rem,4vw,2.15rem); }
+  .sub { margin:0; color:var(--muted); }
+  .download { display:inline-block; flex:0 0 auto; padding:10px 14px; border-radius:10px;
+    background:var(--accent); color:#fff; text-decoration:none; font-weight:700; }
+  .empty, article { background:var(--card); border:1px solid var(--line); border-radius:14px; }
+  .empty { padding:24px; text-align:center; color:var(--muted); }
+  article { margin-bottom:18px; overflow:hidden; }
+  .meta { display:flex; flex-wrap:wrap; gap:8px 14px; padding:14px 18px;
+    background:var(--soft); border-bottom:1px solid var(--line); }
+  .meta strong { color:var(--accent); }
+  .answers { padding:4px 18px; }
+  .answer { padding:15px 0; border-bottom:1px solid var(--line); }
+  .answer:last-child { border-bottom:0; }
+  .question { margin:0 0 6px; font-size:.86rem; font-weight:700; color:var(--muted);
+    text-transform:uppercase; letter-spacing:.035em; }
+  .value { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; }
+  .missing { color:var(--muted); font-style:italic; }
+  @media (max-width:620px) {
+    header { display:block; }
+    .download { margin-top:14px; }
+    .meta, .answers { padding-left:14px; padding-right:14px; }
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#141815; --card:#1c221e; --line:#2c332e; --text:#e7ece8;
+      --muted:#aab2ac; --soft:#202a23; }
+  }
+</style>
+</head>
+<body>
+<main class="wrap">
+  <header>
+    <div>
+      <h1>Inzendingen wijkteams</h1>
+      <p class="sub">{{ aantal }} {{ 'reactie' if aantal == 1 else 'reacties' }} · nieuwste eerst</p>
+    </div>
+    <a class="download" href="{{ url_for('download', token=token) }}">Download CSV</a>
+  </header>
+
+  {% if not inzendingen %}
+    <div class="empty">Er zijn nog geen antwoorden binnen.</div>
+  {% endif %}
+
+  {% for inzending in inzendingen %}
+    <article>
+      <div class="meta">
+        <strong>Reactie {{ aantal - loop.index0 }}</strong>
+        <span>{{ inzending.get('ingediend_op') or 'Tijdstip onbekend' }}</span>
+        <span>Naam: {{ inzending.get('naam') or 'Anoniem' }}</span>
+        <span>Wijkteam: {{ inzending.get('wijkteam') or 'Niet ingevuld' }}</span>
+      </div>
+      <div class="answers">
+        {% for key, vraag in vragen %}
+          <section class="answer">
+            <p class="question">{{ vraag }}</p>
+            {% if inzending.get(key) %}
+              <p class="value">{{ inzending.get(key) }}</p>
+            {% else %}
+              <p class="value missing">Geen antwoord</p>
+            {% endif %}
+          </section>
+        {% endfor %}
+      </div>
+    </article>
+  {% endfor %}
+</main>
+</body>
+</html>
+"""
+
 
 def zorg_voor_header():
     """Zorg dat de CSV bestaat met een kopregel."""
@@ -163,10 +249,38 @@ def bedankt():
     return render_template_string(BEDANKT_HTML, url_for=url_for)
 
 
-@app.route("/download")
-def download():
+def _controleer_admin_token():
     if request.args.get("token") != ADMIN_TOKEN:
         abort(403, "Ongeldige of ontbrekende token. Gebruik ?token=...")
+
+
+def _lees_inzendingen():
+    if not os.path.exists(CSV_PATH):
+        return []
+    with open(CSV_PATH, "r", newline="", encoding="utf-8-sig") as f:
+        return list(csv.DictReader(f))
+
+
+@app.route("/antwoorden")
+def antwoorden():
+    _controleer_admin_token()
+    inzendingen = list(reversed(_lees_inzendingen()))
+    response = app.make_response(render_template_string(
+        ANTWOORDEN_HTML,
+        inzendingen=inzendingen,
+        aantal=len(inzendingen),
+        vragen=VELDEN[3:],
+        token=request.args.get("token"),
+        url_for=url_for,
+    ))
+    response.headers["Cache-Control"] = "no-store"
+    response.headers["X-Robots-Tag"] = "noindex, nofollow, noarchive"
+    return response
+
+
+@app.route("/download")
+def download():
+    _controleer_admin_token()
     if not os.path.exists(CSV_PATH):
         return "Nog geen antwoorden binnen.", 404
     with open(CSV_PATH, "r", encoding="utf-8-sig") as f:
